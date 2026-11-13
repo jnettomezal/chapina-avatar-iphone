@@ -1,62 +1,126 @@
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Chapina V3</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Chapina V3 - Zigzag</title>
 <style>
-html,body {
-  margin:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:white;
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: white;
+  touch-action: none;
 }
 #chapina {
-  position:fixed;
-  left:40px;
-  top:40%;
-  font-size:80px;
-  touch-action:none;
-  user-select:none;
-  cursor:grab;
+  position: fixed;
+  left: 40px;
+  top: 40%;
+  font-size: 80px;
+  line-height: 1;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+#chapina:active {
+  cursor: grabbing;
 }
 </style>
 </head>
 <body>
+
 <div id="chapina">🌺</div>
+
 <script>
-const avatar=document.getElementById("chapina");
-let x=40,y=window.innerHeight*0.4;
-let direction=1,dragging=false;
+const avatar = document.getElementById("chapina");
 
-function move(){
- if(!dragging){
-  x+=direction*1.2;
-  if(x>window.innerWidth-90 || x<0)
-    direction*=-1;
-  avatar.style.left=x+"px";
- }
- requestAnimationFrame(move);
+let x = 40;
+let y = window.innerHeight * 0.4;
+let dx = 1.3;
+let dy = 0.9;
+let dragging = false;
+let offsetX = 0;
+let offsetY = 0;
+
+function limits() {
+  return {
+    maxX: Math.max(0, window.innerWidth - avatar.offsetWidth),
+    maxY: Math.max(0, window.innerHeight - avatar.offsetHeight)
+  };
 }
-move();
 
-avatar.addEventListener("pointerdown",e=>{
- dragging=true;
- avatar.setPointerCapture(e.pointerId);
+function draw() {
+  avatar.style.left = x + "px";
+  avatar.style.top = y + "px";
+}
+
+function move() {
+  if (!dragging) {
+    x += dx;
+    y += dy;
+
+    const {maxX, maxY} = limits();
+
+    if (x >= maxX) {
+      x = maxX;
+      dx = -Math.abs(dx);
+    } else if (x <= 0) {
+      x = 0;
+      dx = Math.abs(dx);
+    }
+
+    if (y >= maxY) {
+      y = maxY;
+      dy = -Math.abs(dy);
+    } else if (y <= 0) {
+      y = 0;
+      dy = Math.abs(dy);
+    }
+
+    draw();
+  }
+
+  requestAnimationFrame(move);
+}
+
+avatar.addEventListener("pointerdown", e => {
+  dragging = true;
+  offsetX = e.clientX - x;
+  offsetY = e.clientY - y;
+  avatar.setPointerCapture(e.pointerId);
 });
-avatar.addEventListener("pointermove",e=>{
- if(!dragging)return;
- x=Math.max(0,Math.min(window.innerWidth-90,e.clientX-40));
- y=Math.max(0,Math.min(window.innerHeight-90,e.clientY-40));
- avatar.style.left=x+"px";
- avatar.style.top=y+"px";
+
+avatar.addEventListener("pointermove", e => {
+  if (!dragging) return;
+
+  const {maxX, maxY} = limits();
+
+  x = Math.max(0, Math.min(maxX, e.clientX - offsetX));
+  y = Math.max(0, Math.min(maxY, e.clientY - offsetY));
+
+  draw();
 });
-avatar.addEventListener("pointerup",()=>{
- dragging=false;
+
+function release() {
+  dragging = false;
+}
+
+avatar.addEventListener("pointerup", release);
+avatar.addEventListener("pointercancel", release);
+
+window.addEventListener("resize", () => {
+  const {maxX, maxY} = limits();
+  x = Math.max(0, Math.min(maxX, x));
+  y = Math.max(0, Math.min(maxY, y));
+  draw();
 });
+
+draw();
+move();
 </script>
+
 </body>
 </html>
