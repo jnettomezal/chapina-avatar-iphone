@@ -1,11 +1,62 @@
 
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Chapina V3</title>
+<style>
+html,body {
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:white;
+}
+#chapina {
+  position:fixed;
+  left:40px;
+  top:40%;
+  font-size:80px;
+  touch-action:none;
+  user-select:none;
+  cursor:grab;
+}
+</style>
 </head>
 <body>
-<h2>🌺 Chapina V3</h2>
-<p>Our new version is ready!</p>
+<div id="chapina">🌺</div>
+<script>
+const avatar=document.getElementById("chapina");
+let x=40,y=window.innerHeight*0.4;
+let direction=1,dragging=false;
+
+function move(){
+ if(!dragging){
+  x+=direction*1.2;
+  if(x>window.innerWidth-90 || x<0)
+    direction*=-1;
+  avatar.style.left=x+"px";
+ }
+ requestAnimationFrame(move);
+}
+move();
+
+avatar.addEventListener("pointerdown",e=>{
+ dragging=true;
+ avatar.setPointerCapture(e.pointerId);
+});
+avatar.addEventListener("pointermove",e=>{
+ if(!dragging)return;
+ x=Math.max(0,Math.min(window.innerWidth-90,e.clientX-40));
+ y=Math.max(0,Math.min(window.innerHeight-90,e.clientY-40));
+ avatar.style.left=x+"px";
+ avatar.style.top=y+"px";
+});
+avatar.addEventListener("pointerup",()=>{
+ dragging=false;
+});
+</script>
 </body>
 </html>
