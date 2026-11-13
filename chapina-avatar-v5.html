@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Chapina V5 - Zigzag and Poses</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:white;touch-action:none}
+#chapina{position:fixed;left:0;top:0;width:120px;height:180px;display:flex;align-items:center;justify-content:center;font-size:75px;touch-action:none;user-select:none;cursor:grab}
+#chapina img{width:100%;height:100%;object-fit:contain;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="chapina">💃</div>
+<script>
+const avatar=document.getElementById("chapina");
+const poses=[];
+let poseIndex=0;
+let x=10,y=10,dx=2.0,dy=1.5;
+let dragging=false,px=0,py=0,lastPose=0;
+function showPose(){
+ if(!poses.length)return;
+ avatar.replaceChildren();
+ const img=document.createElement("img");
+ img.src=poses[poseIndex%poses.length];
+ img.onerror=()=>{avatar.textContent="💃"};
+ avatar.appendChild(img);
+ poseIndex++;
+}
+function clamp(){
+ x=Math.max(0,Math.min(innerWidth-avatar.offsetWidth,x));
+ y=Math.max(0,Math.min(innerHeight-avatar.offsetHeight,y));
+}
+function frame(t){
+ if(!dragging){
+  x+=dx;y+=dy;
+  if(x<=0||x>=innerWidth-avatar.offsetWidth)dx=-dx;
+  if(y<=0||y>=innerHeight-avatar.offsetHeight)dy=-dy;
+  clamp();
+ }
+ avatar.style.transform="translate("+x+"px,"+y+"px)";
+ if(t-lastPose>450){showPose();lastPose=t}
+ requestAnimationFrame(frame);
+}
+avatar.addEventListener("pointerdown",e=>{
+ dragging=true;px=e.clientX-x;py=e.clientY-y;
+ avatar.setPointerCapture(e.pointerId);
+});
+avatar.addEventListener("pointermove",e=>{
+ if(!dragging)return;
+ x=e.clientX-px;y=e.clientY-py;clamp();
+});
+function release(){dragging=false}
+avatar.addEventListener("pointerup",release);
+avatar.addEventListener("pointercancel",release);
+addEventListener("resize",clamp);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
